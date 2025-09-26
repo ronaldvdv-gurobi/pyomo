@@ -34,7 +34,7 @@ from pyomo.opt.results.solver import TerminationCondition, SolverStatus
 from pyomo.opt.base import SolverFactory
 from pyomo.core.base.suffix import Suffix
 
-from pyomo.core.expr.numeric_expr import ProductExpression, NumericExpression, UnaryFunctionExpression, SumExpression
+from pyomo.core.expr.numeric_expr import DivisionExpression, ProductExpression, NumericExpression, UnaryFunctionExpression, SumExpression
 
 
 logger = logging.getLogger('pyomo.solvers')
@@ -339,6 +339,12 @@ class GurobiDirect(DirectSolver):
                 result = 1
                 for g in grb_args:
                     result = result * g
+                return result, referenced_vars
+            
+            if type(nlexpr) is DivisionExpression:
+                if len(grb_args) != 2:
+                    raise NonLinearError(f'Unexpected argument count for division')
+                result = grb_args[0] / grb_args[1]
                 return result, referenced_vars
             
             if type(nlexpr) is SumExpression:
